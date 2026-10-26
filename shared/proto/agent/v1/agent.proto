@@ -1,0 +1,278 @@
+syntax = "proto3";
+
+package agent.V1;
+import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
+
+option go_package = "github.com/qury/yourapp/gen/gigachat/v1;gigachatv1";
+
+
+service GigachatService {
+    rpc Auth(AuthRequest) returns (AuthResponse);
+    rpc ChatCompletion(ChatCompletionRequest) returns (ChatCompletionResponse);
+}
+
+message AuthRequest {
+    string scope = 1;
+}
+
+message AuthResponse {
+    string access_token = 1;
+    int64 expires_at = 2;
+}
+
+// Запрос на генерацию ответа GigaChat.
+message ChatCompletionRequest {
+  // Например: "GigaChat-2-Max".
+  string model = 1;
+
+  // Идентификатор существующего диалога, если продолжается thread.
+  optional string thread_id = 2;
+
+  // Unix timestamp создания запроса, в секундах.
+  optional int64 created_at = 3;
+
+  repeated Message messages = 4;
+
+  ModelOptions model_options = 5;
+
+  bool stream = 6;
+
+  bool disable_filter = 7;
+
+  RankerOptions ranker_options = 8;
+
+  UserInfo user_info = 9;
+
+  ToolConfig tool_config = 10;
+
+  repeated Tool tools = 11;
+}
+
+message ModelOptions {
+  optional double temperature = 1;
+  optional double top_p = 2;
+  optional int32 max_tokens = 3;
+  optional double repetition_penalty = 4;
+  optional int32 update_interval = 5;
+  bool unnormalized_history = 6;
+  optional int32 top_logprobs = 7;
+  ResponseFormat response_format = 8;
+  optional bool parallel_tool_calls = 9;
+}
+
+message ResponseFormat {
+  // Например: "text" или "json_schema".
+  string type = 1;
+
+  // JSON Schema для structured output.
+  google.protobuf.Struct schema = 2;
+
+  bool strict = 3;
+}
+
+message RankerOptions {
+  bool enabled = 1;
+  optional int32 top_n = 2;
+  optional string embeddings_model = 3;
+}
+
+message UserInfo {
+  // IANA timezone, например "Europe/Moscow".
+  string timezone = 1;
+}
+
+message ToolConfig {
+  // Например: "auto".
+  string mode = 1;
+  optional string tool_name = 2;
+  optional string function_name = 3;
+}
+
+// Tool может быть только одного типа.
+message Tool {
+  oneof kind {
+    Functions functions = 1;
+    ImageGenerate image_generate = 2;
+    Model3DGenerate model_3d_generate = 3;
+  }
+}
+
+message Functions {
+  repeated FunctionSpecification specifications = 1;
+}
+
+message FunctionSpecification {
+  string name = 1;
+  string description = 2;
+
+  // JSON Schema параметров функции.
+  google.protobuf.Struct parameters = 3;
+
+  repeated FewShotExample few_shot_examples = 4;
+
+  // JSON Schema возвращаемых значений.
+  google.protobuf.Struct return_parameters = 5;
+}
+
+message FewShotExample {
+  string request = 1;
+
+  // JSON-объект параметров примера.
+  google.protobuf.Struct params = 2;
+}
+
+message ImageGenerate {}
+
+message Model3DGenerate {}
+
+// ============================================================================
+// Shared messages
+// ============================================================================
+
+// Сообщение диалога.
+message Message {
+  // Заполняется в ответе; в запросе обычно не требуется.
+  optional string message_id = 1;
+
+  Role role = 2;
+
+  optional string tool_state_id = 3;
+
+  repeated ContentPart content = 4;
+}
+
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_USER = 1;
+  ROLE_SYSTEM = 2;
+  ROLE_ASSISTANT = 3;
+  ROLE_TOOL = 4;
+}
+
+// Одна часть содержимого сообщения.
+message ContentPart {
+  string text = 1;
+
+  // Произвольные inline-метаданные: источники, изображения и т.п.
+  InlineData inline_data = 2;
+
+  repeated FileRef files = 3;
+
+  // Запрос модели на вызов функции.
+  FunctionCall function_call = 4;
+
+  // Результат выполнения пользовательской функции.
+  FunctionResult function_result = 5;
+
+  // Статус выполнения встроенного tool.
+  ToolExecution tool_execution = 6;
+
+  repeated Logprob logprobs = 7;
+}
+
+message FileRef {
+  string id = 1;
+
+  // Например: "image".
+  string target = 2;
+
+  // Например: "image/png".
+  string mime = 3;
+}
+
+message FunctionCall {
+  string id = 1;
+  string name = 2;
+
+  // Произвольный JSON-объект аргументов.
+  google.protobuf.Struct arguments = 3;
+}
+
+message FunctionResult {
+  string name = 1;
+
+  // Валидный JSON-объект, сериализованный в строку.
+  string result = 2;
+}
+
+message ToolExecution {
+  // Например: "image_generation".
+  string name = 1;
+
+  ToolExecutionStatus status = 2;
+
+  optional int32 seconds_left = 3;
+
+  bool censored = 4;
+}
+
+enum ToolExecutionStatus {
+  TOOL_EXECUTION_STATUS_UNSPECIFIED = 0;
+  TOOL_EXECUTION_STATUS_SUCCESS = 1;
+  TOOL_EXECUTION_STATUS_FAILED = 2;
+  TOOL_EXECUTION_STATUS_PENDING = 3;
+}
+
+message Logprob {
+  TokenLogprob chosen = 1;
+  repeated TokenLogprob top = 2;
+}
+
+message TokenLogprob {
+  string token = 1;
+  int32 token_id = 2;
+  double logprob = 3;
+}
+
+// Произвольные inline-метаданные.
+message InlineData {
+  // Источники web search, если модель их вернула.
+  map<string, Source> sources = 1;
+
+  // Произвольные объекты изображений/метаданных изображений.
+  repeated google.protobuf.Struct images = 2;
+}
+
+message Source {
+  string title = 1;
+  string url = 2;
+}
+
+// ============================================================================
+// Response
+// ============================================================================
+
+// Ответ GigaChat v2 на генерацию.
+message ChatCompletionResponse {
+  string model = 1;
+
+  string thread_id = 2;
+
+  int64 created_at = 3;
+
+  repeated Message messages = 4;
+
+  FinishReason finish_reason = 5;
+
+  Usage usage = 6;
+}
+
+enum FinishReason {
+  FINISH_REASON_UNSPECIFIED = 0;
+  FINISH_REASON_STOP = 1;
+  FINISH_REASON_LENGTH = 2;
+  FINISH_REASON_TOOL_CALLS = 3;
+  FINISH_REASON_CONTENT_FILTER = 4;
+}
+
+message Usage {
+  int32 input_tokens = 1;
+  InputTokensDetails input_tokens_details = 2;
+  int32 output_tokens = 3;
+  int32 total_tokens = 4;
+}
+
+message InputTokensDetails {
+  int32 cached_tokens = 1;
+}
