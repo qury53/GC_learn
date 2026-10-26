@@ -1,7 +1,27 @@
 version: v2
+clean: true
 
+managed:
+  enabled: true
+  override:
+    - go_package_prefix: ://github.com/qury53/GC_learn
+
+# Список используемых плагинов для генерации
 plugins:
-  - remote: buf.build/protocolbuffers/go
+  # 1. Базовый плагин для генерации структур данных Go из Protobuf
+  - remote: buf.build/protocolbuffers/go:v1.36.5
     out: gen/go
     opt:
       - paths=source_relative
+
+  # 2. Плагин для генерации gRPC-клиентов и серверов (раскомментируйте, если нужен gRPC)
+  - remote: buf.build/grpc/go:v1.5.1
+    out: gen/go
+    opt:
+      - paths=source_relative
+
+  # 3. Плагин для валидации полей protoc-gen-validate (опционально, если используете protovalidate)
+  # - remote: buf.build/bufbuild/protovalidate-go:v0.8.2
+  #   out: gen/go
+  #   opt:
+  #     - paths=source_relative
