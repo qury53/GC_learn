@@ -8,17 +8,7 @@ option go_package = "github.com/qury/yourapp/gen/gigachat/v1;gigachatv1";
 
 
 service GigachatService {
-    rpc Auth(AuthRequest) returns (AuthResponse);
     rpc ChatCompletion(ChatCompletionRequest) returns (ChatCompletionResponse);
-}
-
-message AuthRequest {
-    string scope = 1;
-}
-
-message AuthResponse {
-    string access_token = 1;
-    int64 expires_at = 2;
 }
 
 // Запрос на генерацию ответа GigaChat.
