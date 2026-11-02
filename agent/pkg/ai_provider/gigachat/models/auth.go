@@ -7,13 +7,13 @@ import (
 )
 
 type AuthResponse struct {
-	AccessToken string
-	ExpiredAt   int64
+	AccessToken string `json:"access_token"`
+	ExpiresAt   int64  `json:"expires_at"`
 }
 
 func AuthModelToDomain(model AuthResponse) domain.AuthResponse {
 	return domain.AuthResponse{
 		AccessToken: model.AccessToken,
-		ExpiredAt:   time.UnixMicro(model.ExpiredAt),
+		ExpiredAt:   time.UnixMilli(model.ExpiresAt),
 	}
 }

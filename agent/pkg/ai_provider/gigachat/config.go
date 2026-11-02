@@ -3,8 +3,8 @@ package ai_provider_gc
 import "github.com/kelseyhightower/envconfig"
 
 type Config struct {
-	APIKey string `envconfig:"API_KEY,required:true"`
-	Scope  string `envconfig:"SCOPE,default:GIGACHAT_API_PERS"`
+	APIKey string `envconfig:"API_KEY" required:"true"`
+	Scope  string `envconfig:"SCOPE" default:"GIGACHAT_API_PERS"`
 }
 
 func NewConfig() (*Config, error) {

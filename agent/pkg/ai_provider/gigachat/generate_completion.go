@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/qury53/GC_learn/agent/internal/domain"
@@ -29,6 +30,7 @@ func (p *GCProvider) generateCompletion(
 	ctx context.Context,
 	request ai_provider_gc_models.ChatCompletionRequest,
 ) (ai_provider_gc_models.ChatCompletionResponse, error) {
+	log.Printf("generate completion repository")
 	token, err := p.refreshAccessToken(ctx)
 	if err != nil {
 		return ai_provider_gc_models.ChatCompletionResponse{}, fmt.Errorf(

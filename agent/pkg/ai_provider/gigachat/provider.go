@@ -1,6 +1,7 @@
 package ai_provider_gc
 
 import (
+	"crypto/tls"
 	"net"
 	"net/http"
 	"sync"
@@ -18,9 +19,14 @@ type GCProvider struct {
 }
 
 func NewGCProvider(config *Config) *GCProvider {
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+
 	return &GCProvider{
 		client: &http.Client{
 			Transport: &http.Transport{
+				TLSClientConfig: tlsConfig,
 				DialContext: (&net.Dialer{
 					Timeout: 5 * time.Second,
 				}).DialContext,

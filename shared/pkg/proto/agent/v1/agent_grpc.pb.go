@@ -19,99 +19,99 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GigachatService_ChatCompletion_FullMethodName = "/agent.V1.GigachatService/ChatCompletion"
+	AgentService_ChatCompletion_FullMethodName = "/agent.V1.AgentService/ChatCompletion"
 )
 
-// GigachatServiceClient is the client API for GigachatService service.
+// AgentServiceClient is the client API for AgentService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GigachatServiceClient interface {
-	ChatCompletion(ctx context.Context, in *ChatCompletionRequest, opts ...grpc.CallOption) (*ChatCompletionResponse, error)
+type AgentServiceClient interface {
+	ChatCompletion(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error)
 }
 
-type gigachatServiceClient struct {
+type agentServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGigachatServiceClient(cc grpc.ClientConnInterface) GigachatServiceClient {
-	return &gigachatServiceClient{cc}
+func NewAgentServiceClient(cc grpc.ClientConnInterface) AgentServiceClient {
+	return &agentServiceClient{cc}
 }
 
-func (c *gigachatServiceClient) ChatCompletion(ctx context.Context, in *ChatCompletionRequest, opts ...grpc.CallOption) (*ChatCompletionResponse, error) {
+func (c *agentServiceClient) ChatCompletion(ctx context.Context, in *ChatRequest, opts ...grpc.CallOption) (*ChatResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ChatCompletionResponse)
-	err := c.cc.Invoke(ctx, GigachatService_ChatCompletion_FullMethodName, in, out, cOpts...)
+	out := new(ChatResponse)
+	err := c.cc.Invoke(ctx, AgentService_ChatCompletion_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GigachatServiceServer is the server API for GigachatService service.
-// All implementations should embed UnimplementedGigachatServiceServer
+// AgentServiceServer is the server API for AgentService service.
+// All implementations should embed UnimplementedAgentServiceServer
 // for forward compatibility.
-type GigachatServiceServer interface {
-	ChatCompletion(context.Context, *ChatCompletionRequest) (*ChatCompletionResponse, error)
+type AgentServiceServer interface {
+	ChatCompletion(context.Context, *ChatRequest) (*ChatResponse, error)
 }
 
-// UnimplementedGigachatServiceServer should be embedded to have
+// UnimplementedAgentServiceServer should be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedGigachatServiceServer struct{}
+type UnimplementedAgentServiceServer struct{}
 
-func (UnimplementedGigachatServiceServer) ChatCompletion(context.Context, *ChatCompletionRequest) (*ChatCompletionResponse, error) {
+func (UnimplementedAgentServiceServer) ChatCompletion(context.Context, *ChatRequest) (*ChatResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ChatCompletion not implemented")
 }
-func (UnimplementedGigachatServiceServer) testEmbeddedByValue() {}
+func (UnimplementedAgentServiceServer) testEmbeddedByValue() {}
 
-// UnsafeGigachatServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GigachatServiceServer will
+// UnsafeAgentServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AgentServiceServer will
 // result in compilation errors.
-type UnsafeGigachatServiceServer interface {
-	mustEmbedUnimplementedGigachatServiceServer()
+type UnsafeAgentServiceServer interface {
+	mustEmbedUnimplementedAgentServiceServer()
 }
 
-func RegisterGigachatServiceServer(s grpc.ServiceRegistrar, srv GigachatServiceServer) {
-	// If the following call panics, it indicates UnimplementedGigachatServiceServer was
+func RegisterAgentServiceServer(s grpc.ServiceRegistrar, srv AgentServiceServer) {
+	// If the following call panics, it indicates UnimplementedAgentServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&GigachatService_ServiceDesc, srv)
+	s.RegisterService(&AgentService_ServiceDesc, srv)
 }
 
-func _GigachatService_ChatCompletion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChatCompletionRequest)
+func _AgentService_ChatCompletion_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChatRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GigachatServiceServer).ChatCompletion(ctx, in)
+		return srv.(AgentServiceServer).ChatCompletion(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GigachatService_ChatCompletion_FullMethodName,
+		FullMethod: AgentService_ChatCompletion_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GigachatServiceServer).ChatCompletion(ctx, req.(*ChatCompletionRequest))
+		return srv.(AgentServiceServer).ChatCompletion(ctx, req.(*ChatRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// GigachatService_ServiceDesc is the grpc.ServiceDesc for GigachatService service.
+// AgentService_ServiceDesc is the grpc.ServiceDesc for AgentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var GigachatService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "agent.V1.GigachatService",
-	HandlerType: (*GigachatServiceServer)(nil),
+var AgentService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "agent.V1.AgentService",
+	HandlerType: (*AgentServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "ChatCompletion",
-			Handler:    _GigachatService_ChatCompletion_Handler,
+			Handler:    _AgentService_ChatCompletion_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -16,16 +16,6 @@ import (
 )
 
 func (p *GCProvider) requestAccessToken(ctx context.Context) (domain.AuthResponse, error) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if time.Now().Before(p.expiresAt) {
-		return domain.AuthResponse{
-			AccessToken: p.accessToken,
-			ExpiredAt:   p.expiresAt,
-		}, nil
-	}
-
 	url := "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
 	payload := strings.NewReader(fmt.Sprintf("scope=%s", p.scope))
 
@@ -38,7 +28,6 @@ func (p *GCProvider) requestAccessToken(ctx context.Context) (domain.AuthRespons
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("RqUID", uuid.NewString())
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", p.apiKey))
-
 	resp, err := p.client.Do(req)
 
 	if err != nil {
@@ -65,20 +54,11 @@ func (p *GCProvider) requestAccessToken(ctx context.Context) (domain.AuthRespons
 	}
 
 	p.accessToken = response.AccessToken
-	p.expiresAt = time.UnixMilli(response.ExpiredAt)
+	p.expiresAt = time.UnixMilli(response.ExpiresAt)
 	return ai_provider_gc_models.AuthModelToDomain(response), nil
 }
 
 func (p *GCProvider) refreshAccessToken(ctx context.Context) (string, error) {
-	p.mu.RLock()
-	token := p.accessToken
-	expiresAt := p.expiresAt
-	p.mu.RUnlock()
-
-	if p.isValid(token, expiresAt) {
-		return token, nil
-	}
-
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -97,7 +77,6 @@ func (p *GCProvider) refreshAccessToken(ctx context.Context) (string, error) {
 
 	p.accessToken = authResp.AccessToken
 	p.expiresAt = authResp.ExpiredAt
-
 	return p.accessToken, nil
 }
 
