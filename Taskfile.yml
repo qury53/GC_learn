@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  APP_NAME: "GC_agent"
+  BIN_DIR: "bin"
+  BUF_VERSION: "1.75.0"
+  PROTOC_GEN_GO_VERSION: "1.36.12"
+  PROTOC_GEN_GO_VERSION_GRPC: "1.6.2"
+  PROTO_DIR: "/shared/proto"
+
+
+tasks:
+  default:
+    desc: "Задача по умолчанию, запускается автоматически"
+    cmds:
+      - task: run
+
+  install-deps:
+    desc: "Устанавливает зависимости, в основном плагины для gRPC"
+    cmds:
+      - GOBIN="{{.USER_WORKING_DIR}}/{{.BIN_DIR}}" go install github.com/bufbuild/buf/cmd/buf@v{{.BUF_VERSION}}
+      - GOBIN="{{.USER_WORKING_DIR}}/{{.BIN_DIR}}" go install google.golang.org/protobuf/cmd/protoc-gen-go@v{{.PROTOC_GEN_GO_VERSION}}
+      - GOBIN="{{.USER_WORKING_DIR}}/{{.BIN_DIR}}" go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v{{.PROTOC_GEN_GO_VERSION_GRPC}}
+
+  generate-proto:
+    desc: "Генерирует код из .proto файлов"
+    deps:
+      - install-deps
+    dir: "{{.ROOT_DIR}}/{{.PROTO_DIR}}"
+    cmds:
+      - "{{.ROOT_DIR}}/{{.BIN_DIR}}/buf generate"
+
+  cleanup-binaries:
+    desc: "Чистит бинарники сервисов перед запуском"
+    cmds:
+      - rm {{.BIN_DIR}}/agent
+
+  build:
+    desc: "Сборка приложения"
+    deps:
+      - cleanup-binaries
+    cmds:
+      - go build -o {{.BIN_DIR}}/agent ./agent/cmd
+  
+  run:
+    desc: "Запускает собранное приложение"
+    deps:
+      - build
+    cmds:
+      - ./{{.BIN_DIR}}/agent
