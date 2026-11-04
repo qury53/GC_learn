@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package sso.v1;
+
+option go_package = "github.com/qury/yourapp/gen/sso/v1;ssov1";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/duration.proto";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Refresh(RefreshRequest) returns (RefreshResponse);
+  rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
+  rpc VerifyEmail(VerifyEmailRequest) returns (VerifyEmailResponse);
+
+  rpc GetOAuthConnectUrl(OAuthConnectRequest) returns (OAuthConnectResponse);
+  rpc HandleOAuthCallback(OAuthCallbackRequest) returns (LoginResponse);
+}
+
+message RegisterRequest {
+  string username = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message RegisterResponse {
+  int64 user_id = 1;
+  AuthStatus status = 2;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  int64 user_id = 3;
+  AuthStatus status = 4;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  string access_token = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message VerifyEmailRequest {
+  string email = 1;
+  string code = 2;
+}
+
+message VerifyEmailResponse {
+  AuthStatus status = 1;
+}
+
+message OAuthConnectRequest {
+  OAuthProvider provider = 1;
+  string redirect_uri = 2;
+  string code_challenge = 3;
+  CodeChallengeMethod code_challenge_method = 4;
+}
+
+message OAuthConnectResponse {
+  string authorization_url = 1;
+  string oauth_state = 2;
+}
+
+message OAuthCallbackRequest {
+  OAuthProvider provider = 1;
+  string code = 2;
+  string state = 3;
+  string code_verifier = 4;
+}
+
+enum AuthStatus {
+  AUTH_STATUS_UNSPECIFIED = 0;
+  AUTH_STATUS_ACTIVE = 1;
+  AUTH_STATUS_PENDING_VERIFICATION = 2;
+  AUTH_STATUS_MFA_REQUIRED = 3;
+  AUTH_STATUS_BLOCKED = 4;
+}
+
+enum OAuthProvider {
+  OAUTH_PROVIDER_UNSPECIFIED = 0;
+  OAUTH_PROVIDER_GOOGLE = 1;
+  OAUTH_PROVIDER_GITHUB = 2;
+  OAUTH_PROVIDER_YANDEX = 3;
+}
+
+enum CodeChallengeMethod {
+  CODE_CHALLENGE_METHOD_UNSPECIFIED = 0;
+  CODE_CHALLENGE_METHOD_S256 = 1;
+}

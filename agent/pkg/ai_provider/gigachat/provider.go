@@ -28,9 +28,9 @@ func NewGCProvider(config *Config) *GCProvider {
 			Transport: &http.Transport{
 				TLSClientConfig: tlsConfig,
 				DialContext: (&net.Dialer{
-					Timeout: 5 * time.Second,
+					Timeout: 60 * time.Second,
 				}).DialContext,
-				TLSHandshakeTimeout:   5 * time.Second,
+				TLSHandshakeTimeout:   20 * time.Second,
 				ResponseHeaderTimeout: 90 * time.Second,
 			},
 		},

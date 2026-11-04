@@ -55,7 +55,7 @@ func (p *GCProvider) generateCompletion(
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
-
+	req.Header.Set("X-Session-ID", "550e8400-e29b-41d4-a716-446655440000")
 	response, err := p.client.Do(req)
 	if err != nil {
 		return ai_provider_gc_models.ChatCompletionResponse{}, fmt.Errorf("failed to do request: %w", err)
