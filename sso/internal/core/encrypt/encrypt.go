@@ -1,7 +1,10 @@
 package core_encrypt
 
 import (
+	"crypto/rand"
 	"fmt"
+	"math/big"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -30,4 +33,22 @@ func CompareHashAndPassword(hash string, val string) error {
 	}
 
 	return nil
+}
+
+// GenerateVerificationCode генерирует криптографически безопасный N-значный цифровой код
+func GenerateVerificationCode(length int) (string, error) {
+	const digits = "0123456789"
+	var code strings.Builder
+
+	for i := 0; i < length; i++ {
+		// Используем crypto/rand для максимальной безопасности (вместо math/rand)
+		maxIdx := big.NewInt(int64(len(digits)))
+		idx, err := rand.Int(rand.Reader, maxIdx)
+		if err != nil {
+			return "", err
+		}
+		code.WriteByte(digits[idx.Int64()])
+	}
+
+	return code.String(), nil
 }
