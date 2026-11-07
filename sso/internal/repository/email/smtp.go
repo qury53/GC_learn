@@ -1,6 +1,8 @@
 package email_smtp_repository
 
-import "net/smtp"
+import (
+	"net/smtp"
+)
 
 type SmtpRepository struct {
 	auth     smtp.Auth

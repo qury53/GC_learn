@@ -7,12 +7,13 @@ import (
 )
 
 type Config struct {
-	Username    string `envconfig:"USERNAME" required:"true"`
-	Password    string `envconfig:"PASSWORD" required:"true"`
-	SenderEmail string `envconfig:"SENDER_EMAIL" required:"true"`
-	Addr        string `envconfig:"ADDR" required:"true"`
-	Host        string `envconfig:"HOST" required:"true"`
-	Port        string `envconfig:"PORT" required:"true"`
+	Username                string `envconfig:"USERNAME" required:"true"`
+	Password                string `envconfig:"PASSWORD" required:"true"`
+	SenderEmail             string `envconfig:"SENDER_EMAIL" required:"true"`
+	Addr                    string `envconfig:"ADDR" required:"true"`
+	Host                    string `envconfig:"HOST" required:"true"`
+	Port                    string `envconfig:"PORT" required:"true"`
+	VerificationCodeTimeout string `envconfig:"VERIFICATION_CODE_TIMEOUT" default:"300s"`
 }
 
 // NewConfig создает конфиг из .env для Smtp
