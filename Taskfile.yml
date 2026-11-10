@@ -2,6 +2,12 @@
 
 version: '3'
 
+dotenv:
+  - .env
+
+env:
+  PROJECT_ROOT: '{{.ROOT_DIR}}'
+
 vars:
   APP_NAME: "GC_agent"
   BIN_DIR: "bin"
@@ -10,12 +16,67 @@ vars:
   PROTOC_GEN_GO_VERSION_GRPC: "1.6.2"
   PROTO_DIR: "/shared/proto"
 
+  POSTGRES_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@zapiski-postgres:5432/{{.POSTGRES_DB}}?sslmode=disable"
 
 tasks:
-  default:
-    desc: "Задача по умолчанию, запускается автоматически"
+  migrate-force-0:
+    desc: "Сбрасывает dirty-состояние миграций на версию 0"
     cmds:
-      - task: run
+      - docker compose run --rm zapiski-postgres-migrate
+        -path=/migrations
+        -database=postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@zapiski-postgres:5432/{{.POSTGRES_DB}}?sslmode=disable
+        force 0
+
+  migrate-create:
+    desc: "Создаёт новую миграцию: task migrate-create name=create_users"
+    vars:
+      NAME: '{{.name}}'
+    requires:
+      vars:
+        - name
+    cmds:
+      - docker compose run --rm zapiski-postgres-migrate
+        create
+        -ext=sql
+        -dir=/migrations
+        -seq
+        "{{.NAME}}"
+
+  migrate-up:
+    deps:
+      - docker-up
+    desc: "Применяет миграции"
+    vars:
+      LEVEL: '{{.LEVEL}}'
+    cmds:
+      - docker compose run --rm zapiski-postgres-migrate
+        -path=/migrations
+        -database=postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@zapiski-postgres:5432/{{.POSTGRES_DB}}?sslmode=disable
+        up
+        {{.CLI_ARGS}}
+
+  migrate-down:
+    deps:
+      - docker-up
+    desc: "Откатывает миграции"
+    vars:
+      LEVEL: '{{.LEVEL}}'
+    cmds:
+      - docker compose run --rm zapiski-postgres-migrate
+        -path=/migrations
+        -database=postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@zapiski-postgres:5432/{{.POSTGRES_DB}}?sslmode=disable
+        down
+        {{.CLI_ARGS}} 
+
+  docker-up:
+    desc: "Поднимает все докер контейнеры"
+    cmds:
+      - docker compose up -d
+
+  docker-down:
+    desc: "Останавливает все докер контейнеры"
+    cmds:
+      - docker compose down
 
   install-deps:
     desc: "Устанавливает зависимости, в основном плагины для gRPC"
@@ -35,7 +96,7 @@ tasks:
   cleanup-binaries:
     desc: "Чистит бинарники сервисов перед запуском"
     cmds:
-      - rm {{.BIN_DIR}}/agent
+      - rm -f {{.BIN_DIR}}/agent
 
   build:
     desc: "Сборка приложения"
@@ -43,7 +104,7 @@ tasks:
       - cleanup-binaries
     cmds:
       - go build -o {{.BIN_DIR}}/agent ./agent/cmd
-  
+
   run:
     desc: "Запускает собранное приложение"
     deps:

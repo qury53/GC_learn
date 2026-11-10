@@ -10,6 +10,7 @@ import (
 	core_errors "github.com/qury53/GC_learn/sso/internal/core/errors"
 )
 
+// verificationCacheItem структура кода верификации, записывается в кэш, хранит код и дату создания
 type verificationCacheItem struct {
 	Code      string    `json:"code"`
 	CreatedAt time.Time `json:"created_at"`

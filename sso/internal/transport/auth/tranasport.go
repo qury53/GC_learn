@@ -2,20 +2,27 @@ package auth_transport
 
 import (
 	"context"
+	"shared/pkg/logger"
 	ssov1 "shared/pkg/proto/sso/v1"
 
 	"github.com/qury53/GC_learn/sso/internal/core/domain"
 )
 
 type AuthTransport struct {
+	log *logger.Logger
 	ssov1.UnimplementedAuthServiceServer
 	service AuthService
 }
 
 type AuthService interface {
 	Register(ctx context.Context, user domain.User) (int64, domain.VerificationStatus, error)
-	Login(ctx context.Context, username string, password string) (string, int, domain.VerificationStatus)
+	Login(
+		ctx context.Context,
+		username string,
+		password string,
+	) (string, string, int64, domain.VerificationStatus, error)
 	Refresh(ctx context.Context, refreshToken string) (string, error)
+	GetRefreshTokenTTL()
 	VerifyEmail(ctx context.Context, email string, code string) string
 	GetConnectURL(
 		ctx context.Context,
