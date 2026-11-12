@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strings"
 
+	core_errors "github.com/qury53/GC_learn/sso/internal/core/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -29,7 +30,7 @@ func CompareHashAndPassword(hash string, val string) error {
 		[]byte(hash),
 		[]byte(val),
 	); err != nil {
-		return fmt.Errorf("wrong password")
+		return fmt.Errorf("wrong password: %w", core_errors.ErrInvalidCredentials)
 	}
 
 	return nil

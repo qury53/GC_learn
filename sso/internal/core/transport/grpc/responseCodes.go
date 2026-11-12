@@ -18,6 +18,10 @@ func RespondCode(err error) codes.Code {
 		code = codes.ResourceExhausted
 	case errors.Is(err, core_errors.ErrUnauthorized):
 		code = codes.Unauthenticated
+	case errors.Is(err, core_errors.ErrForbidden):
+		code = codes.PermissionDenied
+	case errors.Is(err, core_errors.ErrInvalidCredentials):
+		code = codes.Unauthenticated
 	default:
 		code = codes.Internal
 	}

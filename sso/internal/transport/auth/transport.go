@@ -4,6 +4,7 @@ import (
 	"context"
 	"shared/pkg/logger"
 	ssov1 "shared/pkg/proto/sso/v1"
+	"time"
 
 	"github.com/qury53/GC_learn/sso/internal/core/domain"
 )
@@ -20,9 +21,9 @@ type AuthService interface {
 		ctx context.Context,
 		username string,
 		password string,
-	) (string, string, int64, domain.VerificationStatus, error)
-	Refresh(ctx context.Context, refreshToken string) (string, error)
-	GetRefreshTokenTTL()
+	) (string, string, int64, error)
+	Refresh(ctx context.Context, refreshToken string) (string, string, error)
+	GetRefreshTokenTTL() time.Duration
 	VerifyEmail(ctx context.Context, email string, code string) string
 	GetConnectURL(
 		ctx context.Context,

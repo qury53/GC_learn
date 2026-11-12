@@ -22,16 +22,21 @@ func (t *AuthTransport) Login(
 ) (*ssov1.LoginResponse, error) {
 	if err := validateLogin(req.Username, req.Password); err != nil {
 		t.log.Debug("login validation error", slog.String("error", err.Error()))
-		return &ssov1.LoginResponse{}, status.Error(
+		return nil, status.Error(
 			core_transport_grpc_response.RespondCode(err),
 			"login validation error",
 		)
 	}
 
-	access, refresh, user_id, verification_status, err := t.service.Login(ctx, req.Username, req.Password)
+	access, refresh, userID, err := t.service.Login(ctx, req.Username, req.Password)
 	if err != nil {
-		t.log.Debug("failed to login", slog.String("error", err.Error()))
-		return &ssov1.LoginResponse{}, status.Error(
+		t.log.Debug(
+			"login failed",
+			slog.String("username", req.Username),
+			slog.Any("error", err),
+		)
+
+		return nil, status.Error(
 			core_transport_grpc_response.RespondCode(err),
 			"service login error",
 		)
@@ -40,7 +45,7 @@ func (t *AuthTransport) Login(
 	cookieValue := fmt.Sprintf(
 		"refresh_token=%s; Path=/; Max-Age=%d; HttpOnly; Secure; SameSite=Lax",
 		refresh,
-		int((30 * 24 * time.Hour).Seconds()), // Время жизни, например, 30 дней
+		int(t.service.GetRefreshTokenTTL()/time.Second),
 	)
 
 	md := metadata.Pairs("set-cookie", cookieValue)
@@ -51,8 +56,7 @@ func (t *AuthTransport) Login(
 
 	return &ssov1.LoginResponse{
 		AccessToken: access,
-		UserId:      user_id,
-		Status:      ssov1.AuthStatus(verification_status),
+		UserId:      userID,
 	}, nil
 }
 
@@ -63,7 +67,7 @@ func validateLogin(username string, password string) error {
 	}
 
 	passwordLen := utf8.RuneCountInString(password)
-	if passwordLen < 3 || passwordLen > 32 {
+	if passwordLen < 6 || passwordLen > 72 {
 		return fmt.Errorf("password length has to be between 6 and 72: %w", core_errors.ErrInvalidArgument)
 	}
 

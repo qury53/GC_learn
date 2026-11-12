@@ -11,7 +11,7 @@ import (
 
 // Claims данные, которые хранятся в jwt токене, нужны в основном для фронта
 type Claims struct {
-	UserID int
+	UserID int64
 	jwt.RegisteredClaims
 }
 
@@ -27,14 +27,14 @@ func (s *AuthService) GetRefreshTokenTTL() time.Duration {
 //
 // Returns: string, error
 
-func (s *AuthService) GenerateAccessToken(userID int) (string, error) {
+func (s *AuthService) GenerateAccessToken(userID int64) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.AccessTokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "finapp",
+			Issuer:    "zapiski",
 			Subject:   fmt.Sprintf("%d", userID),
 		},
 	}
@@ -55,14 +55,14 @@ func (s *AuthService) GenerateAccessToken(userID int) (string, error) {
 //
 // Returns: string, error
 
-func (s *AuthService) GenerateRefreshToken(userID int) (string, error) {
+func (s *AuthService) GenerateRefreshToken(userID int64) (string, error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.RefreshTokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "finapp",
+			Issuer:    "zapiski",
 			Subject:   fmt.Sprintf("%d", userID),
 		},
 	}
@@ -107,7 +107,7 @@ func (s *AuthService) ValidateToken(tokenString string) (*Claims, error) {
 //
 // Returns: int, bool, error
 
-func (s *AuthService) ValidateRefreshToken(ctx context.Context, tokenStr string) (int, bool, error) {
+func (s *AuthService) ValidateRefreshToken(ctx context.Context, tokenStr string) (int64, bool, error) {
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenStr, claims, func(token *jwt.Token) (interface{}, error) {
@@ -131,3 +131,5 @@ func (s *AuthService) ValidateRefreshToken(ctx context.Context, tokenStr string)
 
 	return claims.UserID, true, nil
 }
+
+func (s *AuthService) RotateToken(ctx context.Context, oldJTI string)
